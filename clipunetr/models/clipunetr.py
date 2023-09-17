@@ -144,7 +144,6 @@ class UnetrUpBlock(nn.Module):
         ):
         super().__init__()
         self.transp_conv = nn.Sequential(
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=True),
             nn.Conv2d(in_channels, out_channels, kernel_size, padding=1),
         )
 
@@ -155,6 +154,8 @@ class UnetrUpBlock(nn.Module):
         )
 
     def forward(self, inp, skip):
+        h, w = skip.shape[-2:]
+        inp = F.interpolate(inp, size=(h, w), mode="bilinear", align_corners=True)
         out = self.transp_conv(inp)
         out = torch.cat((out, skip), dim=1)
         out = self.conv_block(out)
